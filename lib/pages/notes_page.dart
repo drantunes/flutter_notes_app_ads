@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app_ads/main.dart';
 import 'package:flutter_notes_app_ads/models/note.dart';
 import 'package:flutter_notes_app_ads/pages/add_note_page.dart';
 import 'package:flutter_notes_app_ads/repositories/notes_repository.dart';
 import 'package:flutter_notes_app_ads/widgets/bottom_navigation_widget.dart';
 import 'package:flutter_notes_app_ads/widgets/note_card.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:provider/provider.dart';
 
 class NotesPage extends StatefulWidget {
   const NotesPage({Key? key}) : super(key: key);
@@ -15,40 +18,46 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   final NotesRepository notesRepository = NotesRepository();
   List<Note> notes = [];
+  int numColumns = 2;
+  bool showArchived = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadNotes();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _loadNotes();
+  // }
 
-  _loadNotes() {
-    notes = notesRepository.notes;
-  }
+  // _loadNotes() {
+  //   notes = notesRepository.notes;
+  // }
 
-  _updateNotes() {
-    setState(() {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Nota adicionada!'),
-          action: SnackBarAction(
-            label: 'OK',
-            onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-          ),
-        ),
-      );
-    });
-  }
+  // _updateNotes() {
+  //   setState(() {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: const Text('Nota adicionada!'),
+  //         action: SnackBarAction(
+  //           label: 'OK',
+  //           onPressed: () => ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+  //         ),
+  //       ),
+  //     );
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final notesRepository = context.watch<NotesRepository>();
+    notes = notesRepository.getNotes(showArchived);
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes'),
+        title: Text(
+            showArchived ? '${context.read<Title1>().value} (${notes.length})' : 'Notes (${notes.length})'),
         actions: [
           IconButton(
-            onPressed: () => {},
-            icon: const Icon(Icons.view_agenda_outlined),
+            onPressed: () => setState(() => numColumns = (numColumns == 1) ? 2 : 1),
+            icon: Icon(numColumns == 2 ? Icons.view_agenda_outlined : Icons.grid_view_outlined),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -81,22 +90,22 @@ class _NotesPageState extends State<NotesPage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: GridView.count(
-          crossAxisCount: 2,
+        child: MasonryGridView.count(
+          crossAxisCount: numColumns,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1,
-          children: notes.map((note) => NoteCard(note: note)).toList(),
+          itemCount: notes.length,
+          itemBuilder: (context, index) => NoteCard(note: notes[index]),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (_) => AddNotePage(
-                notesRepository: notesRepository,
-                onSave: _updateNotes,
-              ),
+              builder: (_) => const AddNotePage(
+                  // notesRepository: notesRepository,
+                  // onSave: _updateNotes,
+                  ),
               fullscreenDialog: true,
             ),
           );
@@ -108,13 +117,13 @@ class _NotesPageState extends State<NotesPage> {
         buttons: [
           IconButton(
             tooltip: '',
-            icon: const Icon(Icons.lightbulb),
-            onPressed: () => {},
+            icon: Icon(showArchived ? Icons.lightbulb_outline : Icons.lightbulb),
+            onPressed: () => setState(() => showArchived = false),
           ),
           IconButton(
             tooltip: '',
-            icon: const Icon(Icons.archive_outlined),
-            onPressed: () => {},
+            icon: Icon(showArchived ? Icons.archive : Icons.archive_outlined),
+            onPressed: () => setState(() => showArchived = true),
           ),
           IconButton(
             tooltip: '',

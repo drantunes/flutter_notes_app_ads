@@ -40,7 +40,7 @@ class NoteCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   note.description,
-                  maxLines: 4,
+                  maxLines: 7,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall,
                 ),

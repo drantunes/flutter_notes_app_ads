@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app_ads/models/note.dart';
 import 'package:flutter_notes_app_ads/repositories/notes_repository.dart';
+import 'package:provider/provider.dart';
 
 class AddNotePage extends StatefulWidget {
-  final NotesRepository notesRepository;
-  final Function() onSave;
+  // final NotesRepository notesRepository;
+  // final Function() onSave;
 
   const AddNotePage({
     Key? key,
-    required this.notesRepository,
-    required this.onSave,
+    // required this.notesRepository,
+    // required this.onSave,
   }) : super(key: key);
 
   @override
@@ -24,14 +25,16 @@ class _AddNotePageState extends State<AddNotePage> {
   // bool showPass = false;
   saveNote() {
     if (_formKey.currentState!.validate()) {
-      widget.notesRepository.saveNote(
+      final notesRepository = context.read<NotesRepository>();
+
+      notesRepository.saveNote(
         Note(
           title: _noteTitle.text,
           description: _noteDescription.text,
           color: _noteColor,
         ),
       );
-      widget.onSave();
+      //widget.onSave();
       Navigator.of(context).pop();
     }
   }
